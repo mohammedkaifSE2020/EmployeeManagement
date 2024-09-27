@@ -4,15 +4,15 @@ import { useLocation } from 'react-router-dom';
 function Update() {
   const location = useLocation();
   // 
-  const id = location.state.id;
-  
+  const data = location.state.data;
+  const id = data._id
   const [formData, setFormData] = useState({
-    f_Name: '',
-    f_Email: '',
-    f_Mobile: '',
-    f_Designation: '',
-    f_gender: '',
-    f_Course: '', // Keep as string
+    f_Name: data.f_Name,
+    f_Email: data.f_Email,
+    f_Mobile: data.f_Mobile,
+    f_Designation: data.f_Designation,
+    f_gender: data.f_gender,
+    f_Course: data.f_Course, // Keep as string
   });
   const [image, setImage] = useState(null);
   const [responseMessage, setResponseMessage] = useState(''); // State to hold response message
@@ -121,7 +121,7 @@ function Update() {
             />
           </div>
 
-          <div className="right flex items-start justify-start flex-col gap-2">
+          <div className="right flex items-start justify-start flex-col gap-2 mt-10">
             <label className=' text-lg font-medium mt-5'>Designation</label>
             <div>
               <select
@@ -188,10 +188,13 @@ function Update() {
             <label className=' text-lg font-medium mt-5'>Upload Image</label>
             <input
               type="file"
+              accept=".jpg,.png"
               id="f_Image"
               onChange={handleImageChange}
               className=''
             />
+            <p className=' text-white'>Attention: Only .jpg and .png image formats</p>
+            <p className=' text-white'>are accepted for upload. </p>
           </div>
         </div>
         <button type="submit" className='bg-green-400 w-96 h-10 rounded-lg p-2 mt-10 ml-[350px] mb-10'>Update</button>

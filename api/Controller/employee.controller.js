@@ -127,13 +127,33 @@ export const updateEmployee = async (req, res) => {
       
       const id = req.params.id;
       
-      // Check if the employee exists in the database using the provided email
+      // Check if the employee exists in the database using the provided id
       const employee = await Employee.findById( id );
       if (!employee) {
         return res.json({
           status: 404,
           success: false,
           message: "Employee not found",
+        });
+      }
+
+      // Email validation: Check if the email is in valid format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple regex to validate email format
+      if (!emailRegex.test(f_Email)) {
+        return res.json({
+          success: false,
+          status: 400,
+          message: "Invalid email format. Please provide a valid email address.",
+        });
+      }
+
+      // Check for duplicate email in the database
+      const userWithSameEmail = await Employee.findOne({ f_Email });
+      if (userWithSameEmail) {
+        return res.json({
+          success: false,
+          status: 400,
+          message: "Email already taken. Please use another email address.",
         });
       }
   

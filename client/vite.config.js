@@ -6,7 +6,8 @@ export default defineConfig({
   server:{
     proxy : {
       '/api' : {
-        target: 'https://employeemanagement-backend-0c7y.onrender.com', // Replace this with your backend's address (e.g., Express or FastAPI)
+        //target: 'https://employeemanagement-backend-0c7y.onrender.com', // Replace this with your backend's address (e.g., Express or FastAPI)
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       }
