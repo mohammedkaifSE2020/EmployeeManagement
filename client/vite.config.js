@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.BACKEND_URL, // Use process.env instead of import.meta.env
+        target: "https://employee-management-murex-xi.vercel.app/", // Use process.env instead of import.meta.env
         changeOrigin: true,
         secure: false,
       }
