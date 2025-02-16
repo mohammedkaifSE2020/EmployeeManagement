@@ -1,39 +1,131 @@
-import React,{ useState } from 'react'
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
+//clg(data) -> Before Parsing
+// {
+//   "f_Course": [
+//     "[\"MCA\", \"BCA\",\"Bsc\"]"
+//   ],
+//   "f_Designation": "Manager",
+//   "f_Email": "kaifmohammed008@gmail.com",
+//   "f_Id": "DealsDray6343",
+//   "f_Image": "https://res.cloudinary.com/do7cexa1k/image/upload/v1728658477/c5mzh9l3pwkrzeinmxka.png",
+//   "f_Mobile": 92849274534,
+//   "f_Name": "kaif",
+//   "f_gender": "M",
+//   "updatedAt": "2024-10-11T14:54:38.156Z",
+//   "__v": 0,
+//   "_id": "67093a9c688d9dd47e8448b8"
+// }
+
+// console.log(formData) -> After parsing data
+// {
+//   "f_Course": [
+//     "MCA",
+//     "BCA",
+//     "Bsc"
+//   ],
+//   "f_Designation": "Manager",
+//   "f_Email": "kaifmohammed008@gmail.com",
+//   "f_Mobile": 92849274534,
+//   "f_Name": "kaif",
+//   "f_gender": "M"
+// }
+
+
+
 function Update() {
+
+  //fetch data from params 
   const location = useLocation();
-  // 
   const data = location.state.data;
-  const id = data._id
+  const id = data._id;
+
+  console.log(data)
+
+  //parse f_Course string into an array
+  //const parsedArray = JSON.parse(data.f_Course[0]);
+
+  //setData in hook with initial values
   const [formData, setFormData] = useState({
     f_Name: data.f_Name,
     f_Email: data.f_Email,
     f_Mobile: data.f_Mobile,
     f_Designation: data.f_Designation,
     f_gender: data.f_gender,
-    f_Course: data.f_Course, // Keep as string
+    f_Course: data.f_Course || [], // Ensure it's initialized as an array
   });
+  console.log(formData)
+  
   const [image, setImage] = useState(null);
-  const [responseMessage, setResponseMessage] = useState(''); // State to hold response message
+  const [responseMessage, setResponseMessage] = useState('');
 
   // Handle input change
-  const handleChange = (e) => {
-    const { id, value } = e.target;
+  // const handleChange = (e) => {
+  //   const { id, value } = e.target;
 
+  //   if (id === 'f_Designation') {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [id]: value,
+  //     }));
+  //   } else if (e.target.type === 'checkbox') {
+  //     const courseName = e.target.name;
+
+  //     // Add or remove course from the f_Course array
+  //     setFormData((prevData) => {
+  //       let updatedCourses = [...prevData.f_Course];
+
+  //       // Add course if checked, remove if unchecked
+  //       if (e.target.checked) {
+  //         updatedCourses.push(courseName);
+  //       } else {
+  //         updatedCourses = updatedCourses.filter((course) => course !== courseName);
+  //       }
+  //       console.log(updatedCourses)
+  //       return {
+  //         ...prevData,
+  //         f_Course: updatedCourses,
+  //       };
+  //     });
+  //   } else {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [id]: value,
+  //     }));
+  //   }
+  // };
+
+  const handleChange = (e) => {
+    const { id, value, name } = e.target;
+  
     if (id === 'f_Designation') {
       setFormData((prevData) => ({
         ...prevData,
         [id]: value,
       }));
     } else if (e.target.type === 'checkbox') {
-      const courseName = e.target.name;
-
-      // Set f_Course to the name of the checked course, or empty string if unchecked
+      // Create a new array with the updated selections
+      const updatedCourses = [];
+  
+      // Check the state of each checkbox and add to the array if checked
+      if (document.getElementById('f_Course_Bsc').checked) {
+        updatedCourses.push('Bsc');
+      }
+      if (document.getElementById('f_Course_MCA').checked) {
+        updatedCourses.push('MCA');
+      }
+      if (document.getElementById('f_Course_BCA').checked) {
+        updatedCourses.push('BCA');
+      }
+      
+      // Update the formData with the new f_Course array
       setFormData((prevData) => ({
         ...prevData,
-        f_Course: e.target.checked ? courseName : '',
+        f_Course: updatedCourses,
       }));
+
+      
     } else {
       setFormData((prevData) => ({
         ...prevData,
@@ -41,6 +133,9 @@ function Update() {
       }));
     }
   };
+  
+
+
 
   // Handle radio button change
   const handleRadioChange = (e) => {
@@ -56,23 +151,17 @@ function Update() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     const data = new FormData();
     for (const key in formData) {
-      data.append(key, formData[key]);
+      data.append(key, Array.isArray(formData[key]) ? JSON.stringify(formData[key]) : formData[key]); // Stringify arrays
     }
 
-    // Append the image if it exists
     if (image) {
       data.append('f_Image', image);
     }
 
-    // Send data to the endpoint
-    for (const [key, value] of data.entries()) {
-      console.log(`${key}: ${value}`);
-    }
-    console.log(image)
     try {
       const response = await fetch(`/api/employee/update/${id}`, {
         method: 'POST',
@@ -80,8 +169,7 @@ function Update() {
       });
 
       const result = await response.json();
-      console.log(result) // Assuming the response is in JSON format
-      setResponseMessage(result.message || 'Form submitted successfully!'); // Adjust based on your API response
+      setResponseMessage(result.message || 'Form updated successfully!');
     } catch (error) {
       setResponseMessage(`Error: ${error.message}`);
     }
@@ -145,6 +233,7 @@ function Update() {
                 id="gender_male"
                 name="gender"
                 value="M"
+                checked={formData.f_gender === 'M'}
               />
               <label htmlFor="gender_male">Male</label>
               <input
@@ -153,6 +242,7 @@ function Update() {
                 id="gender_female"
                 name="gender"
                 value="F"
+                checked={formData.f_gender === 'F'}
               />
               <label htmlFor="gender_female">Female</label>
             </div>
@@ -164,7 +254,7 @@ function Update() {
                 onChange={handleChange}
                 id="f_Course_Bsc"
                 name="Bsc"
-                checked={formData.f_Course === 'Bsc'} // Check if the course is selected
+                checked={formData.f_Course.includes('Bsc')} // Check if the course is selected
               />
               <label htmlFor="f_Course_Bsc">Bsc</label>
               <input
@@ -172,7 +262,7 @@ function Update() {
                 onChange={handleChange}
                 id="f_Course_MCA"
                 name="MCA"
-                checked={formData.f_Course === 'MCA'} // Check if the course is selected
+                checked={formData.f_Course.includes('MCA')} // Check if the course is selected
               />
               <label htmlFor="f_Course_MCA">MCA</label>
               <input
@@ -180,7 +270,7 @@ function Update() {
                 onChange={handleChange}
                 id="f_Course_BCA"
                 name="BCA"
-                checked={formData.f_Course === 'BCA'} // Check if the course is selected
+                checked={formData.f_Course.includes('BCA')} // Check if the course is selected
               />
               <label htmlFor="f_Course_BCA">BCA</label>
             </div>
@@ -188,7 +278,6 @@ function Update() {
             <label className=' text-lg font-medium mt-5'>Upload Image</label>
             <input
               type="file"
-              accept=".jpg,.png"
               id="f_Image"
               onChange={handleImageChange}
               className=''
@@ -199,10 +288,8 @@ function Update() {
         </div>
         <button type="submit" className='bg-green-400 w-96 h-10 rounded-lg p-2 mt-10 ml-[350px] mb-10'>Update</button>
       </form>
-
-      
     </div>
   );
 }
 
-export default Update
+export default Update;

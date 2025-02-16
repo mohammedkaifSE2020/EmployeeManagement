@@ -7,10 +7,12 @@ export const createEmployee = async (req, res) => {
     const { f_Name, f_Email, f_Mobile, f_Designation, f_gender, f_Course } = req.body;
     
     //Handle Image Upload
-    const imageDetails = req.file;
-    const imageLocalPath = imageDetails.path;
+    const imageDetails = req?.file;
+    const imageLocalPath = imageDetails?.path;
     const response = await uploadCloudinary(imageLocalPath);
-    const f_Image = response.secure_url;
+    const f_Image = response?.secure_url;
+
+    console.log(f_Image)
 
 
     // Check if all fields are provided
@@ -51,6 +53,12 @@ export const createEmployee = async (req, res) => {
     const employeeIdPrefix = "DealsDray";
     const f_Id = `${employeeIdPrefix}${randomNumber}`;
 
+    //change-1
+    // Convert f_Course from a string to an array of courses
+    const f_CourseArray = Array.isArray(f_Course) ? f_Course : f_Course.split(',').map(course => course.trim());
+
+    console.log(f_CourseArray)
+    //change-2
     // Create a new employee document using the provided details
     const newEmployee = new Employee({
       f_Id,
@@ -60,7 +68,7 @@ export const createEmployee = async (req, res) => {
       f_Mobile,
       f_Designation,
       f_gender,
-      f_Course
+      f_Course : f_CourseArray
     });
 
     // Save the new employee to the database
@@ -111,7 +119,7 @@ export const deleteEmployee = async (req, res) => {
     });
   } catch (error) {
     // Log the error and send a failure response
-    console.error("Something went wrong while deleting the employee record:", error);
+    console.error("Something went wrong while deleting the employee record:",error);
     return res.json({
       status: 400,
       success: false,
@@ -120,96 +128,182 @@ export const deleteEmployee = async (req, res) => {
   }
 };
 
+// export const updateEmployee = async (req, res) => {
+//     try {
+//       // Extract employee email from the request body
+//       const { f_Email, f_Name, f_Mobile, f_Designation, f_gender, f_Course } = req.body;
+      
+//       const id = req.params.id;
+      
+//       // Check if the employee exists in the database using the provided id
+//       const employee = await Employee.findById( id );
+//       if (!employee) {
+//         return res.json({
+//           status: 404,
+//           success: false,
+//           message: "Employee not found",
+//         });
+//       }
+
+//       // Email validation: Check if the email is in valid format
+//       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple regex to validate email format
+//       if (!emailRegex.test(f_Email)) {
+//         return res.json({
+//           success: false,
+//           status: 400,
+//           message: "Invalid email format. Please provide a valid email address.",
+//         });
+//       }
+
+//       // Check for duplicate email in the database
+//       // const userWithSameEmail = await Employee.findOne({ f_Email });
+//       // if (userWithSameEmail) {
+//       //   return res.json({
+//       //     success: false,
+//       //     status: 400,
+//       //     message: "Email already taken. Please use another email address.",
+//       //   });
+//       // }
+  
+//       let imageUrl;
+//       // Handle image update if a new image file is provided
+//       if (req.file) {
+//         const imageDetails = req.file;
+//         const imageLocalPath = imageDetails.path;
+//         const response = await uploadCloudinary(imageLocalPath);
+//         imageUrl = response.secure_url;
+//       }
+  
+//       // Build the update object by only including fields that are provided
+//       const updateFields = {
+//         ...(f_Email && { f_Email }),
+//         ...(f_Name && { f_Name }),
+//         ...(f_Mobile && { f_Mobile }),
+//         ...(f_Designation && { f_Designation }),
+//         ...(f_gender && { f_gender }),
+//         ...(f_Course && { f_Course }),
+//         ...(imageUrl && { f_Image: imageUrl })
+//       };
+  
+//       // If no fields are being updated, return an error
+//       if (Object.keys(updateFields).length === 0) {
+//         return res.json({
+//           status: 400,
+//           success: false,
+//           message: "No fields provided for update",
+//         });
+//       }
+  
+//       // Update the employee record with the new details
+//       const updatedEmployee = await Employee.findByIdAndUpdate(
+//          id ,  // Find employee by id
+//         updateFields, // Only update the fields that are provided
+//         { new: true } // Return the updated document
+//       );
+  
+//       // Send success response with the updated employee data
+//       res.json({
+//         status: 200,
+//         success: true,
+//         message: "Employee updated successfully",
+//         data: updatedEmployee,
+//       });
+//     } catch (error) {
+//       // Log the error and send a failure response
+//       console.error("Something went wrong while updating the employee record:", error);
+//       return res.json({
+//         status: 400,
+//         success: false,
+//         message: "Something went wrong while updating the employee record",
+//       });
+//     }
+// };
+
+
 export const updateEmployee = async (req, res) => {
-    try {
-      // Extract employee email from the request body
-      const { f_Email, f_Name, f_Mobile, f_Designation, f_gender, f_Course } = req.body;
-      
-      const id = req.params.id;
-      
-      // Check if the employee exists in the database using the provided id
-      const employee = await Employee.findById( id );
-      if (!employee) {
-        return res.json({
-          status: 404,
-          success: false,
-          message: "Employee not found",
-        });
-      }
+  try {
+    // Extract employee details from the request body
+    const { f_Email, f_Name, f_Mobile, f_Designation, f_gender, f_Course } = req.body; // f_Course should be an array
+    
+    const id = req.params.id;
 
-      // Email validation: Check if the email is in valid format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple regex to validate email format
-      if (!emailRegex.test(f_Email)) {
-        return res.json({
-          success: false,
-          status: 400,
-          message: "Invalid email format. Please provide a valid email address.",
-        });
-      }
-
-      // Check for duplicate email in the database
-      const userWithSameEmail = await Employee.findOne({ f_Email });
-      if (userWithSameEmail) {
-        return res.json({
-          success: false,
-          status: 400,
-          message: "Email already taken. Please use another email address.",
-        });
-      }
-  
-      let imageUrl;
-      // Handle image update if a new image file is provided
-      if (req.file) {
-        const imageDetails = req.file;
-        const imageLocalPath = imageDetails.path;
-        const response = await uploadCloudinary(imageLocalPath);
-        imageUrl = response.secure_url;
-      }
-  
-      // Build the update object by only including fields that are provided
-      const updateFields = {
-        ...(f_Email && { f_Email }),
-        ...(f_Name && { f_Name }),
-        ...(f_Mobile && { f_Mobile }),
-        ...(f_Designation && { f_Designation }),
-        ...(f_gender && { f_gender }),
-        ...(f_Course && { f_Course }),
-        ...(imageUrl && { f_Image: imageUrl })
-      };
-  
-      // If no fields are being updated, return an error
-      if (Object.keys(updateFields).length === 0) {
-        return res.json({
-          status: 400,
-          success: false,
-          message: "No fields provided for update",
-        });
-      }
-  
-      // Update the employee record with the new details
-      const updatedEmployee = await Employee.findByIdAndUpdate(
-         id ,  // Find employee by id
-        updateFields, // Only update the fields that are provided
-        { new: true } // Return the updated document
-      );
-  
-      // Send success response with the updated employee data
-      res.json({
-        status: 200,
-        success: true,
-        message: "Employee updated successfully",
-        data: updatedEmployee,
+    // Check if the employee exists in the database using the provided id
+    const employee = await Employee.findById(id);
+    if (!employee) {
+      return res.json({
+        status: 404,
+        success: false,
+        message: "Employee not found",
       });
-    } catch (error) {
-      // Log the error and send a failure response
-      console.error("Something went wrong while updating the employee record:", error);
+    }
+
+    // Email validation: Check if the email is in valid format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple regex to validate email format
+    if (!emailRegex.test(f_Email)) {
+      return res.json({
+        success: false,
+        status: 400,
+        message: "Invalid email format. Please provide a valid email address.",
+      });
+    }
+
+    // Handle image update if a new image file is provided
+    let imageUrl;
+    if (req.file) {
+      const imageDetails = req.file;
+      const imageLocalPath = imageDetails.path;
+      const response = await uploadCloudinary(imageLocalPath);
+      imageUrl = response.secure_url;
+    }
+    const parsedArray = JSON.parse(f_Course)
+    
+    // Build the update object by only including fields that are provided
+    const updateFields = {
+      ...(f_Email && { f_Email }),
+      ...(f_Name && { f_Name }),
+      ...(f_Mobile && { f_Mobile }),
+      ...(f_Designation && { f_Designation }),
+      ...(f_gender && { f_gender }),
+      ...(parsedArray && { f_Course : parsedArray }), // Always set f_Course as a new array if provided
+      //...(f_Course && { f_Course }),
+      ...(imageUrl && { f_Image: imageUrl }),
+    };
+
+    // If no fields are being updated, return an error
+    if (Object.keys(updateFields).length === 0) {
       return res.json({
         status: 400,
         success: false,
-        message: "Something went wrong while updating the employee record",
+        message: "No fields provided for update",
       });
     }
+
+    // Update the employee record with the new details
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      id, // Find employee by id
+      updateFields, // Only update the fields that are provided
+      { new: true } // Return the updated document
+    );
+
+    // Send success response with the updated employee data
+    res.json({
+      status: 200,
+      success: true,
+      message: "Employee updated successfully",
+      data: updatedEmployee,
+    });
+  } catch (error) {
+    // Log the error and send a failure response
+    console.error("Something went wrong while updating the employee record:", error);
+    return res.json({
+      status: 400,
+      success: false,
+      message: "Something went wrong while updating the employee record",
+    });
+  }
 };
+
+
 
 export const getAllEmployees = async (req, res) => {
     try {

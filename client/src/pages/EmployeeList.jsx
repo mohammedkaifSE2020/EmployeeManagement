@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useEmployeeDelete from '../utils/handleUpdate';
 
 function EmployeeList() {
-  const [listOfEmployees, setListOfEmployees] = useState([]);
-  const [filteredEmployees, setFilteredEmployees] = useState([]); // For filtered employees
+   // For filtered employees
   const [searchQuery, setSearchQuery] = useState(''); // For search input
   const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' }); // For sorting
+  const { listOfEmployees, filteredEmployees, deleteEmployee,setListOfEmployees,setFilteredEmployees } = useEmployeeDelete([]);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);  // For pagination
   const employeesPerPage = 5;  // Number of employees to display per page
@@ -20,21 +21,12 @@ function EmployeeList() {
       setFilteredEmployees(data.data); // Initialize filtered list with all employees
     }
     getData();
-  }, []);
+  }, [listOfEmployees,filteredEmployees]);
 
-  const handleDelete = async (id) => {
-    try {
-      await fetch(`/api/employee/delete/${id}`, {
-        method: 'DELETE',
-      });
-      const updatedEmployeeList = listOfEmployees.filter((employee) => employee._id !== id);
-      setListOfEmployees(updatedEmployeeList);
-      setFilteredEmployees(updatedEmployeeList); // Also update filtered employees
-
-    } catch (error) {
-      console.log("Error deleting employee:", error);
-    }
-  };
+  
+  const handleDelete = (id)=>{
+    deleteEmployee(id);
+  }
 
   const handleUpdate = (employee) => {
     navigate(`/update/${employee._id}`, { state: { data : employee  } });
@@ -146,7 +138,7 @@ function EmployeeList() {
                     <td className='p-2 border'>{employee.f_Mobile}</td>
                     <td className='p-2 border'>{employee.f_Designation}</td>
                     <td className='p-2 border'>{employee.f_gender}</td>
-                    <td className='p-2 border'>{employee.f_Course}</td>
+                    <td className='p-2 border'>{employee.f_Course.join(' ')}</td>
                     <td className='p-2 border'>{new Date(employee.createdAt).toLocaleDateString()}</td>
                     <td className='p-2 border'>
                       <button

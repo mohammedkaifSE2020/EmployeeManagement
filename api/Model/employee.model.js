@@ -32,7 +32,7 @@ const employeeSchema = Schema({
     },
     f_Course : {
         required : true,
-        type : String,
+        type : [String],
     },
     f_Image : {
         required : true,
