@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.BACKEND_URL, // Use process.env instead of import.meta.env
+        target: process.env.VITE_BACKEND_URL, // Use process.env instead of import.meta.env
         changeOrigin: true,
         secure: false,
       }
