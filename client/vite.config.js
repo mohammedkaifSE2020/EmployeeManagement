@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import dotenv from 'dotenv'
 
-// https://vitejs.dev/config/
+// Load environment variables from `.env`
+dotenv.config()
+
 export default defineConfig({
-  server:{
-    proxy : {
-      '/api' : {
-        //target: 'https://employeemanagement-backend-0c7y.onrender.com', // Replace this with your backend's address (e.g., Express or FastAPI)
-        target: 'http://localhost:8000',
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.BACKEND_URL, // Use process.env instead of import.meta.env
         changeOrigin: true,
         secure: false,
       }
