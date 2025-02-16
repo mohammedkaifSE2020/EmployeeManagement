@@ -3,8 +3,15 @@ import Dotenv from "dotenv"
 import dbConnect from "./dbConnect/dbConnect.js";
 import loginRouter from "./Routes/login.route.js";
 import employeeRouter from "./Routes/employee.route.js";
+import cors from 'cors'
 
 const app = express()
+
+app.use(cors({
+    origin: "https://employee-management-wol5-5rwgewrqt.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // If using cookies or sessions
+  }));
 
 app.use(express.json())
 Dotenv.config()
